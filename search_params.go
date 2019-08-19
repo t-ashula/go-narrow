@@ -442,18 +442,10 @@ func (params *SearchParams) queryFromNotBigGenre() url.Values {
 	if l == 0 {
 		return vs
 	}
-	genres := make(map[BigGenre]int)
-	for _, genre := range params.notBigGenres {
-		genres[genre] = 1
-	}
-	if len(genres) == 0 {
-		return vs
-	}
-	i := 0
-	codes := make([]string, len(genres))
-	for k := range genres {
-		codes[i] = fmt.Sprintf("%d", k)
-		i++
+
+	codes := make([]string, l)
+	for i, g := range params.notBigGenres {
+		codes[i] = fmt.Sprintf("%d", g)
 	}
 	vs.Set(keyNotBigGenre, strings.Join(codes, "-"))
 	return vs
