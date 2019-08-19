@@ -20,9 +20,14 @@ func NewSearchParams() *SearchParams {
 
 // ToURL return full URL or nil if params contains invalid condition
 func (params *SearchParams) ToURL() (*url.URL, error) {
-	fullURL, err := url.Parse(NarouAPIEndPoint)
+	return params.makeFullURL(params.endPointURL(), params.toQueryFuncs())
+}
+
+type toQueryFunc func() url.Values
+
+func (params *SearchParams) makeFullURL(endPoint string, funcs []toQueryFunc) (*url.URL, error) {
+	fullURL, err := url.Parse(endPoint)
 	if err != nil {
-		// need check?
 		return nil, err
 	}
 
@@ -36,7 +41,23 @@ func (params *SearchParams) ToURL() (*url.URL, error) {
 		return nil, err
 	}
 
-	toQueryFuncs := []func() url.Values{
+	for _, f := range funcs {
+		if m := f(); len(m) != 0 {
+			for k, vs := range m {
+				q[k] = vs
+			}
+		}
+	}
+
+	return fullURL, nil
+}
+
+func (params *SearchParams) endPointURL() string {
+	return NarouAPIEndPoint
+}
+
+func (params *SearchParams) toQueryFuncs() []toQueryFunc {
+	return []toQueryFunc{
 		params.queryFromStart,
 		params.queryFromLimit,
 		params.queryFromOutputField,
@@ -60,16 +81,6 @@ func (params *SearchParams) ToURL() (*url.URL, error) {
 		params.queryFromPickup,
 		params.queryFromLastUp,
 	}
-
-	for _, f := range toQueryFuncs {
-		if m := f(); len(m) != 0 {
-			for k, vs := range m {
-				q[k] = vs
-			}
-		}
-	}
-
-	return fullURL, nil
 }
 
 // Valid returns params is OK or not
@@ -1197,6 +1208,9 @@ func (params *SearchParams) queryFromLastUp() url.Values {
 // NarouAPIEndPoint contains Narou novel api endpoit
 const NarouAPIEndPoint = "https://api.syosetu.com/novelapi/api/"
 
+// NarouR18APIEndPoint is Narou R18 novel api endpoint
+const NarouR18APIEndPoint = "https://api.syosetu.com/novel18api/api/"
+
 const outputFormatKey = "out"
 const outputFormat = "json"
 
@@ -1218,6 +1232,9 @@ const (
 	keyStop        = "stop"
 	keyIsPickup    = "ispickup"
 	keyLastUp      = "lastup"
+
+	keyNocGenre    = "nocgenre"
+	keyNotNocGenre = "notnocgenre"
 )
 
 var outputFieldShortNames = map[OutputField]string{
@@ -1254,6 +1271,8 @@ var outputFieldShortNames = map[OutputField]string{
 	OutputFieldKaiwaritu:      "ka",
 	OutputFieldNovelUpdatedAt: "nu",
 	OutputFieldUpdatedAt:      "ua",
+
+	OutputFieldNocGenre: "ng",
 }
 
 var orderItemNames = map[OrderItem]string{

@@ -26,6 +26,10 @@ type NovelInfo struct {
 	BigGenre *int
 	// ジャンル
 	Genre *int
+
+	// Nocture or else, R18 only
+	NocturneGenre *int
+
 	//// 原作(未使用項目)
 	//// Gensaku string
 	// キーワード
@@ -123,6 +127,8 @@ const (
 	OutputFieldKaiwaritu
 	OutputFieldNovelUpdatedAt
 	OutputFieldUpdatedAt
+
+	OutputFieldNocGenre
 )
 
 // SearchField stands for search word field
@@ -319,4 +325,24 @@ type SearchParams struct {
 	limit  int
 	offset int
 	order  OrderItem
+}
+
+// NocGenre for nocturne or monlight
+type NocGenre int
+
+// nocgenres
+const (
+	NocGenreAll            NocGenre = 0
+	NocGenreNocturne       NocGenre = 1
+	NocGenreMoonlightWomen NocGenre = 2
+	NocGenreMoonlightBL    NocGenre = 3
+	NocGenreMidnight       NocGenre = 4
+)
+
+// SearchR18Params used for R18API
+type SearchR18Params struct {
+	SearchParams
+
+	nocGenres    []NocGenre
+	notNocGenres []NocGenre
 }
