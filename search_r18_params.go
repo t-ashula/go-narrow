@@ -140,18 +140,10 @@ func (params *SearchR18Params) queryFromNotNocGenre() url.Values {
 	if l == 0 {
 		return vs
 	}
-	genres := make(map[NocGenre]int)
-	for _, genre := range params.notNocGenres {
-		genres[genre] = 1
-	}
-	if len(genres) == 0 {
-		return vs
-	}
-	i := 0
-	codes := make([]string, len(genres))
-	for k := range genres {
-		codes[i] = fmt.Sprintf("%d", k)
-		i++
+
+	codes := make([]string, l)
+	for i, g := range params.notNocGenres {
+		codes[i] = fmt.Sprintf("%d", g)
 	}
 	vs.Set(keyNotNocGenre, strings.Join(codes, "-"))
 	return vs
