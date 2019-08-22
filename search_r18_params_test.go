@@ -11,7 +11,7 @@ func TestNewSearchR18Params(t *testing.T) {
 		name string
 		want *SearchR18Params
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -55,61 +55,27 @@ func TestSearchR18Params_ToURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.params.ToURL()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("SearchParams.ToURL() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SearchR18Params.ToURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			// should not change path
 			if got.Path != tt.want.Path {
-				t.Errorf("SearchParams.ToURL().Path = %v, want.Path %v", got.Path, tt.want.Path)
+				t.Errorf("SearchR18Params.ToURL().Path = %v, want.Path %v", got.Path, tt.want.Path)
 				return
 			}
 
 			// query part
 			gr, wr := got.RawQuery, tt.want.RawQuery
 			if len(gr) != len(wr) {
-				t.Errorf("SearchParams.ToURL().RawQuery = %v, len = %v, want.RawQuery = %v, len = %v", gr, len(gr), wr, len(wr))
+				t.Errorf("SearchR18Params.ToURL().RawQuery = %v, len = %v, want.RawQuery = %v, len = %v", gr, len(gr), wr, len(wr))
 				return
 			}
 
 			gq, wq := got.Query(), tt.want.Query()
 			if !reflect.DeepEqual(gq, wq) {
-				t.Errorf("SearchParams.ToURL().Query %v, want.Query %v", gq, wq)
+				t.Errorf("SearchR18Params.ToURL().Query %v, want.Query %v", gq, wq)
 				return
-			}
-		})
-	}
-}
-
-func TestSearchR18Params_endPointURL(t *testing.T) {
-	tests := []struct {
-		name   string
-		params *SearchR18Params
-		want   string
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.params.endPointURL(); got != tt.want {
-				t.Errorf("SearchR18Params.endPointURL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestSearchR18Params_toQueryFuncs(t *testing.T) {
-	tests := []struct {
-		name   string
-		params *SearchR18Params
-		want   []func() url.Values
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.params.toQueryFuncs(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SearchR18Params.toQueryFuncs() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -121,7 +87,8 @@ func TestSearchR18Params_NocGenres(t *testing.T) {
 		params *SearchR18Params
 		want   []NocGenre
 	}{
-	// TODO: Add test cases.
+		{"default", &SearchR18Params{}, nil},
+		{"noc genres", &SearchR18Params{nocGenres: []NocGenre{NocGenreNocturne}}, []NocGenre{NocGenreNocturne}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -140,27 +107,34 @@ func TestSearchR18Params_AddNocGenres(t *testing.T) {
 		name   string
 		params *SearchR18Params
 		args   args
+		want   []NocGenre
 	}{
-	// TODO: Add test cases.
+		{"genre + []", &SearchR18Params{nocGenres: []NocGenre{NocGenreMoonlightWomen}}, args{[]NocGenre{}}, []NocGenre{NocGenreMoonlightWomen}},
+		{"[] + genre", &SearchR18Params{nocGenres: []NocGenre{}}, args{[]NocGenre{NocGenreNocturne}}, []NocGenre{NocGenreNocturne}},
+		{"genres + genres",
+			&SearchR18Params{nocGenres: []NocGenre{NocGenreNocturne}}, args{[]NocGenre{NocGenreMidnight}},
+			[]NocGenre{NocGenreNocturne, NocGenreMidnight}},
+		{"merge genres",
+			&SearchR18Params{nocGenres: []NocGenre{NocGenreNocturne, NocGenreMidnight}}, args{[]NocGenre{NocGenreMidnight}},
+			[]NocGenre{NocGenreNocturne, NocGenreMidnight}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.params.AddNocGenres(tt.args.genres)
+			result := tt.params.NocGenres()
+			if !reflect.DeepEqual(result, tt.want) {
+				t.Errorf("SearchParams.AddNocGenres(%v) result %v(l:%d,c:%d), want %v(l:%d,c:%d)",
+					tt.args.genres, result, len(result), cap(result), tt.want, len(tt.want), cap(tt.want))
+			}
 		})
 	}
 }
 
 func TestSearchR18Params_ClearNocGenres(t *testing.T) {
-	tests := []struct {
-		name   string
-		params *SearchR18Params
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.params.ClearNocGenres()
-		})
+	params := &SearchR18Params{nocGenres: []NocGenre{NocGenreNocturne}}
+	params.ClearNocGenres()
+	if params.NocGenres() != nil {
+		t.Errorf("SearchParams.ClearNocGenres() should change NotNocGenres be nil, but %v", params.NocGenres())
 	}
 }
 
@@ -170,7 +144,10 @@ func TestSearchR18Params_queryFromNocGenre(t *testing.T) {
 		params *SearchR18Params
 		want   url.Values
 	}{
-	// TODO: Add test cases.
+		{"no NocGenres, no query", &SearchR18Params{}, makeValues([][2]string{})},
+		{`NocGenres:[MidNight], nocgenre=4`, &SearchR18Params{nocGenres: []NocGenre{NocGenreMidnight}}, makeValues([][2]string{{"nocgenre", "4"}})},
+		{`NocGenres:[Nocturne, MidNight], nocgenre=1-4`,
+			&SearchR18Params{nocGenres: []NocGenre{NocGenreNocturne, NocGenreMidnight}}, makeValues([][2]string{{"nocgenre", "1-4"}})},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -187,7 +164,8 @@ func TestSearchR18Params_NotNocGenres(t *testing.T) {
 		params *SearchR18Params
 		want   []NocGenre
 	}{
-	// TODO: Add test cases.
+		{"default", &SearchR18Params{}, nil},
+		{"not noc genres", &SearchR18Params{notNocGenres: []NocGenre{NocGenreNocturne}}, []NocGenre{NocGenreNocturne}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -206,27 +184,34 @@ func TestSearchR18Params_AddNotNocGenres(t *testing.T) {
 		name   string
 		params *SearchR18Params
 		args   args
+		want   []NocGenre
 	}{
-	// TODO: Add test cases.
+		{"genre + []", &SearchR18Params{notNocGenres: []NocGenre{NocGenreMoonlightWomen}}, args{[]NocGenre{}}, []NocGenre{NocGenreMoonlightWomen}},
+		{"[] + genre", &SearchR18Params{notNocGenres: []NocGenre{}}, args{[]NocGenre{NocGenreNocturne}}, []NocGenre{NocGenreNocturne}},
+		{"genres + genres",
+			&SearchR18Params{notNocGenres: []NocGenre{NocGenreNocturne}}, args{[]NocGenre{NocGenreMidnight}},
+			[]NocGenre{NocGenreNocturne, NocGenreMidnight}},
+		{"merge genres",
+			&SearchR18Params{notNocGenres: []NocGenre{NocGenreNocturne, NocGenreMidnight}}, args{[]NocGenre{NocGenreMidnight}},
+			[]NocGenre{NocGenreNocturne, NocGenreMidnight}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.params.AddNotNocGenres(tt.args.genres)
+			result := tt.params.NotNocGenres()
+			if !reflect.DeepEqual(result, tt.want) {
+				t.Errorf("SearchParams.AddNotNocGenres(%v) result %v(l:%d,c:%d), want %v(l:%d,c:%d)",
+					tt.args.genres, result, len(result), cap(result), tt.want, len(tt.want), cap(tt.want))
+			}
 		})
 	}
 }
 
 func TestSearchR18Params_ClearNotNocGenres(t *testing.T) {
-	tests := []struct {
-		name   string
-		params *SearchR18Params
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.params.ClearNotNocGenres()
-		})
+	params := &SearchR18Params{notNocGenres: []NocGenre{NocGenreNocturne}}
+	params.ClearNotNocGenres()
+	if params.NotNocGenres() != nil {
+		t.Errorf("SearchParams.ClearNotNocGenres() should change NotNocGenres be nil, but %v", params.NotNocGenres())
 	}
 }
 
@@ -236,7 +221,10 @@ func TestSearchR18Params_queryFromNotNocGenre(t *testing.T) {
 		params *SearchR18Params
 		want   url.Values
 	}{
-	// TODO: Add test cases.
+		{"no notNocGenres, no query", &SearchR18Params{}, makeValues([][2]string{})},
+		{`notNocGenres:[MidNight], notnocgenre=4`, &SearchR18Params{notNocGenres: []NocGenre{NocGenreMidnight}}, makeValues([][2]string{{"notnocgenre", "4"}})},
+		{`notNocGenres:[Nocturne, MidNight], notnocgenre=1-4`,
+			&SearchR18Params{notNocGenres: []NocGenre{NocGenreNocturne, NocGenreMidnight}}, makeValues([][2]string{{"notnocgenre", "1-4"}})},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
