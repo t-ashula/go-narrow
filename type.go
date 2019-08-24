@@ -1,6 +1,9 @@
 package narrow
 
-import "time"
+import (
+	"net/url"
+	"time"
+)
 
 // SearchResult contains fetch result
 type SearchResult struct {
@@ -296,6 +299,11 @@ const (
 	// OrderItemOld is 更新が古い順
 	OrderItemOld
 )
+
+// Params define search parameter object interface
+type Params interface {
+	ToURL() (*url.URL, error)
+}
 
 // SearchParams contains API search parameters
 type SearchParams struct {

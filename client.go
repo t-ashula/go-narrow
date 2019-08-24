@@ -25,7 +25,7 @@ func NewClient() *Client {
 }
 
 // Search returns narou API result
-func (c *Client) Search(ctx context.Context, params *SearchParams) (*SearchResult, error) {
+func (c *Client) Search(ctx context.Context, params Params) (*SearchResult, error) {
 	u, err := params.ToURL()
 	if err != nil {
 		return nil, err

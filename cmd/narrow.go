@@ -16,7 +16,7 @@ func main() {
 func run() int {
 	fmt.Fprintf(os.Stderr, "go-narrow client %s\n", narrow.Version)
 	client := narrow.NewClient()
-	params := narrow.NewSearchParams()
+	params := narrow.NewSearchR18Params()
 	res, err := client.Search(context.Background(), params)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "search failed. %v", err)
