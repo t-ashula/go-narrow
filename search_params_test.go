@@ -49,6 +49,9 @@ func TestSearchParams_ToURL(t *testing.T) {
 		{"with output field Title, NCode",
 			&SearchParams{outputFields: []OutputField{OutputFieldTitle, OutputFieldNCode}},
 			parseURL("https://api.syosetu.com/novelapi/api/?out=json&of=t-n"), false},
+		{"with output field Title, NCode, ImpressionCount",
+			&SearchParams{outputFields: []OutputField{OutputFieldTitle, OutputFieldNCode, OutputFieldImpressionCount}},
+			parseURL("https://api.syosetu.com/novelapi/api/?out=json&of=t-n-imp"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -87,7 +90,7 @@ func TestSearchParams_Valid(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+	// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -2928,7 +2931,7 @@ func Test_minmaxPair_val(t *testing.T) {
 		args args
 		want *int
 	}{
-		// TODO: Add test cases.
+	// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
