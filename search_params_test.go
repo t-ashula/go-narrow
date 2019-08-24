@@ -36,10 +36,10 @@ func TestSearchParams_ToURL(t *testing.T) {
 			parseURL("https://api.syosetu.com/novelapi/api/?out=json&st=42"), false},
 		{"with limit",
 			&SearchParams{limit: 42},
-			parseURL("https://api.syosetu.com/novelapi/api/?out=json&limit=42"), false},
+			parseURL("https://api.syosetu.com/novelapi/api/?out=json&lim=42"), false},
 		{"with st(offset), limit",
 			&SearchParams{offset: 42, limit: 30},
-			parseURL("https://api.syosetu.com/novelapi/api/?out=json&st=42&limit=30"), false},
+			parseURL("https://api.syosetu.com/novelapi/api/?out=json&st=42&lim=30"), false},
 		{"with output field All",
 			&SearchParams{outputFields: []OutputField{OutputFieldAll}},
 			parseURL("https://api.syosetu.com/novelapi/api/?out=json"), false},
@@ -162,7 +162,7 @@ func TestSearchParams_queryFromLimit(t *testing.T) {
 		want   url.Values
 	}{
 		{"no limit should be no query", &SearchParams{}, makeValues([][2]string{})},
-		{"limit:X to limit=X", &SearchParams{limit: 42}, makeValues([][2]string{{"limit", "42"}})},
+		{"limit:X to lim=X", &SearchParams{limit: 42}, makeValues([][2]string{{"lim", "42"}})},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

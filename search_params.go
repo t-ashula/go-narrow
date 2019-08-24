@@ -94,10 +94,10 @@ func (params *SearchParams) Valid() (bool, error) {
 
 const minLimit, maxLimit = 1, 500
 
-// Limit return `limit` parameter
+// Limit return `lim` parameter
 func (params *SearchParams) Limit() int { return params.limit }
 
-// SetLimit set `limit` parameter
+// SetLimit set `lim` parameter
 func (params *SearchParams) SetLimit(limit int) {
 	if limit < minLimit || limit > maxLimit {
 		return
@@ -105,13 +105,13 @@ func (params *SearchParams) SetLimit(limit int) {
 	params.limit = limit
 }
 
-// ClearLimit clear `limit` parameter
+// ClearLimit clear `lim` parameter
 func (params *SearchParams) ClearLimit() { params.limit = 0 }
 
 func (params *SearchParams) queryFromLimit() url.Values {
 	vs := make(url.Values)
 	if params.limit != 0 {
-		vs.Set("limit", fmt.Sprintf("%d", params.limit))
+		vs.Set("lim", fmt.Sprintf("%d", params.limit))
 	}
 	return vs
 }
