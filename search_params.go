@@ -15,6 +15,7 @@ func NewSearchParams() *SearchParams {
 	params.kaiwaritus = make(minmaxPair)
 	params.readTimes = make(minmaxPair)
 	params.sasies = make(minmaxPair)
+	params.opts = make(map[optionName]bool)
 	return params
 }
 
@@ -80,6 +81,7 @@ func (params *SearchParams) toQueryFuncs() []toQueryFunc {
 		params.queryFromStop,
 		params.queryFromPickup,
 		params.queryFromLastUp,
+		params.queryFromOpt,
 	}
 }
 
@@ -1205,6 +1207,36 @@ func (params *SearchParams) queryFromLastUp() url.Values {
 	return vs
 }
 
+// WithWeeklyUnique returns wether opt=weekly or not
+func (params *SearchParams) WithWeeklyUnique() bool {
+	if f, ok := params.opts[optionNameWeeklyUnique]; ok {
+		return f
+	}
+	return false
+}
+
+// SetWithWeeklyUnique set `opt=weekly` query
+func (params *SearchParams) SetWithWeeklyUnique(f bool) {
+	if f {
+		params.opts[optionNameWeeklyUnique] = true
+	} else {
+		delete(params.opts, optionNameWeeklyUnique)
+	}
+}
+
+// ClearWithWeeklyUnique clear `opt=weekly` query
+func (params *SearchParams) ClearWithWeeklyUnique() {
+	delete(params.opts, optionNameWeeklyUnique)
+}
+
+func (params *SearchParams) queryFromOpt() url.Values {
+	vs := make(url.Values)
+	if params.opts[optionNameWeeklyUnique] {
+		vs.Set("opt", "weekly")
+	}
+	return vs
+}
+
 // NarouAPIEndPoint contains Narou novel api endpoit
 const NarouAPIEndPoint = "https://api.syosetu.com/novelapi/api/"
 
@@ -1340,6 +1372,13 @@ const (
 	requiredKeywordIsTenni
 	requiredKeywordIsNotTenni
 	requiredKeywordIsTT
+)
+
+type optionName int
+
+const (
+	optionNameNone optionName = iota
+	optionNameWeeklyUnique
 )
 
 type mmpKey int

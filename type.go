@@ -100,6 +100,9 @@ type NovelInfo struct {
 	// システム用最終更新日時
 	UpdatedAt *time.Time
 
+	// 週間ユニークユーザ数
+	WeeklyUnique *int
+
 	// R18 側結果かどうか
 	fromSearchX bool
 }
@@ -353,6 +356,8 @@ type SearchParams struct {
 	limit  int
 	offset int
 	order  OrderItem
+
+	opts map[optionName]bool
 }
 
 // NocGenre for nocturne or monlight

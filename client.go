@@ -138,6 +138,7 @@ func (res *response) toNoevlInfo() NovelInfo {
 	if res.UpdatedAt != nil {
 		info.UpdatedAt = &(*res.UpdatedAt).Time
 	}
+	info.WeeklyUnique = res.WeeklyUnique
 	return info
 }
 
@@ -225,6 +226,9 @@ type response struct {
 	NovelUpdatedAt *novelTime `json:"novelupdated_at"`
 	// 最終更新日時 (注意：システム用で小説更新時とは関係ありません)
 	UpdatedAt *novelTime `json:"updated_at"`
+
+	// 週間ユニークユーザ数
+	WeeklyUnique *int `json:"weekly_unique"`
 }
 
 type novelTime struct {

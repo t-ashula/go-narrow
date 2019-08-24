@@ -36,7 +36,7 @@ func Test_parseResponse(t *testing.T) {
 			 "pc_or_k":2,
 			 "global_point":154, "daily_point": 0, "weekly_point": 10, "monthly_point":30, "quarter_point":100, "yearly_point":154,
 			 "fav_novel_cnt":33,"impression_cnt":20,"review_cnt":0,"all_point":88,"all_hyoka_cnt":10,"sasie_cnt":0,
-			 "kaiwaritu":43,"novelupdated_at":"2019-08-16 08:35:52","updated_at":"2019-08-16 08:38:16"
+			 "kaiwaritu":43,"novelupdated_at":"2019-08-16 08:35:52","updated_at":"2019-08-16 08:38:16","weekly_unique":50
 			},{
 			 "title":"\u6E90\u6C0F\u7269\u8A9E",
 			 "ncode":"N9999ZZ","userid":9876543,"writer":"purple",
@@ -47,7 +47,7 @@ func Test_parseResponse(t *testing.T) {
 			 "pc_or_k":2,
 			 "global_point":132,"daily_point":2,"weekly_point":13,"monthly_point":40,"quarter_point":100, "yearly_point": 123,
 			 "fav_novel_cnt":49,"impression_cnt":10,"review_cnt":0,"all_point":34,"all_hyoka_cnt":5,"sasie_cnt":0,
-			 "kaiwaritu":30,"novelupdated_at":"2019-08-16 08:35:42","updated_at":"2019-08-16 08:38:16"
+			 "kaiwaritu":30,"novelupdated_at":"2019-08-16 08:35:42","updated_at":"2019-08-16 08:38:16","weekly_unique":20
 			}]`)},
 			&SearchResult{
 				AllCount: 12345,
@@ -91,6 +91,7 @@ func Test_parseResponse(t *testing.T) {
 						KaiwaRitu:       intp(43),
 						NovelUpdatedAt:  jstDate(2019, 8, 16, 8, 35, 52, 0),
 						UpdatedAt:       jstDate(2019, 8, 16, 8, 38, 16, 0),
+						WeeklyUnique:    intp(50),
 					},
 					{
 						Title:           strp("源氏物語"),
@@ -131,6 +132,7 @@ func Test_parseResponse(t *testing.T) {
 						KaiwaRitu:       intp(30),
 						NovelUpdatedAt:  jstDate(2019, 8, 16, 8, 35, 42, 0),
 						UpdatedAt:       jstDate(2019, 8, 16, 8, 38, 16, 0),
+						WeeklyUnique:    intp(20),
 					},
 				},
 			},
