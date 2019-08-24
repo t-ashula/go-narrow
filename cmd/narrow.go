@@ -4,33 +4,107 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/t-ashula/go-narrow"
+
+	"github.com/urfave/cli"
 )
 
 func main() {
-	os.Exit(run())
+	app := cli.NewApp()
+	app.Version = narrow.Version
+	app.Commands = []cli.Command{{
+		Name:  "search",
+		Usage: "Search from syosetu.com group",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "site",
+				Value: "narou",
+				Usage: "search from `SITE` {narou, noc(Nocturne), mid(midnight), ml(moonlight), mlbl(moonlight bl)}",
+			},
+			cli.IntFlag{Name: "limit", Value: 20, Usage: "max number of output"},
+			cli.IntFlag{Name: "start", Value: 1, Usage: "start from"},
+			cli.StringFlag{
+				Name:  "order",
+				Value: "new",
+				Usage: "order by `ITEM` {new, fav, review, hyoka, hyokaasc, impression, hyokacnt, hyokacntasc, weekly, lengthdesc, lengthasc, ncodedesc, old}",
+			},
+			cli.StringSliceFlag{
+				Name:  "keywords",
+				Usage: "search keywords",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			site := c.String("site")
+			if !isKnownSite(site) {
+				return fmt.Errorf("unknown site `%s` specified", site)
+			}
+			params := makeParams(c)
+			client := narrow.NewClient()
+			res, err := client.Search(context.Background(), params)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(os.Stdout, "AllCount:%d\n", res.AllCount)
+			for i, n := range res.NovelInfos {
+				v, err := json.Marshal(&n)
+				if err != nil {
+					v = []byte(fmt.Sprintf("%+v", n))
+				}
+				fmt.Fprintf(os.Stdout, "%d : %s\n", i, v)
+			}
+
+			return nil
+		},
+	}}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func run() int {
-	fmt.Fprintf(os.Stderr, "go-narrow client %s\n", narrow.Version)
-	client := narrow.NewClient()
-	params := narrow.NewSearchR18Params()
-	params.SetLimit(1)
-	params.AddOutputFields([]narrow.OutputField{narrow.OutputFieldNovelType})
-	res, err := client.Search(context.Background(), params)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "search failed. %v", err)
-		return 1
+func isKnownSite(site string) bool {
+	return site == "noc" || site == "mid" || site == "ml" || site == "mlbl" || site == "narou" || site == ""
+}
+
+func makeParams(c *cli.Context) narrow.Params {
+	params := narrow.NewSearchParams()
+	if c.IsSet("limit") {
+		params.SetLimit(c.Int("limit"))
 	}
-	fmt.Fprintf(os.Stdout, "AllCount:%d\n", res.AllCount)
-	for i, n := range res.NovelInfos {
-		v, err := json.Marshal(&n)
-		if err != nil {
-			v = []byte(fmt.Sprintf("%+v", n))
-		}
-		fmt.Fprintf(os.Stdout, "%d : %s\n", i, v)
+	if c.IsSet("start") {
+		params.SetStart(c.Int("start"))
 	}
-	return 0
+	if c.IsSet("keywords") {
+		params.AddWords(c.StringSlice("keywords"))
+	}
+	// TODO: more flags
+
+	site := c.String("site")
+	if site == "noc" || site == "mid" || site == "ml" || site == "mlbl" {
+		r18 := narrow.NewSearchR18Params()
+		r18.SearchParams = *params
+		r18.AddNocGenres([]narrow.NocGenre{nocgenre(site)})
+		// TODO: NotNocGenere,
+		return r18
+	}
+
+	return params
+}
+
+func nocgenre(site string) narrow.NocGenre {
+	switch site {
+	case "noc":
+		return narrow.NocGenreNocturne
+	case "mid":
+		return narrow.NocGenreMidnight
+	case "ml":
+		return narrow.NocGenreMoonlightWomen
+	case "mlbl":
+		return narrow.NocGenreMoonlightBL
+	default:
+		return narrow.NocGenreAll
+	}
 }
