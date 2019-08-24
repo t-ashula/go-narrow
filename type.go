@@ -71,8 +71,20 @@ type NovelInfo struct {
 
 	// 総合評価ポイント
 	GlobalPoint *int
+	// 日間ポイント
+	DailyPoint *int
+	// 週間ポイント
+	WeeklyPoint *int
+	// 月間ポイント
+	MonthlyPoint *int
+	// 四半期ポイント
+	QuarterPoint *int
+	// 年間ポイント
+	YearlyPoint *int
 	// (R18)ブックマーク数
 	FavNovelCount *int
+	// 感想数
+	ImpressionCount *int
 	// レビュー数
 	ReviewCount *int
 	// 評価点
@@ -132,6 +144,14 @@ const (
 	OutputFieldUpdatedAt
 
 	OutputFieldNocGenre
+
+	OutputFieldDailyPoint
+	OutputFieldWeeklyPoint
+	OutputFieldMonthlyPoint
+	OutputFieldQuaterPoint
+	OutputFieldYearlyPoint
+
+	OutputFieldImpressionCount
 )
 
 // SearchField stands for search word field
