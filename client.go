@@ -117,7 +117,13 @@ func (res *response) toNoevlInfo() NovelInfo {
 	info.IsTenni = nilOrTrue(res.IsTenni)
 	info.PCOrK = res.PcOrK
 	info.GlobalPoint = res.GlobalPoint
+	info.DailyPoint = res.DailyPoint
+	info.WeeklyPoint = res.WeeklyPoint
+	info.MonthlyPoint = res.MonthlyPoint
+	info.QuarterPoint = res.QuarterPoint
+	info.YearlyPoint = res.YearlyPoint
 	info.FavNovelCount = res.FavNovelCnt
+	info.ImpressionCount = res.ImpressionCnt
 	info.ReviewCount = res.ReviewCnt
 	info.AllPoint = res.AllPoint
 	info.AllHyokaCount = res.AllHyokoCnt
@@ -186,8 +192,21 @@ type response struct {
 	PcOrK *int `json:"pc_or_k"`
 	// 総合評価ポイント(=(ブックマーク数×2)+評価点)
 	GlobalPoint *int `json:"global_point"`
+	// 日間
+	DailyPoint *int `json:"daily_point"`
+	// 週間
+	WeeklyPoint *int `json:"weekly_point"`
+	// 月間
+	MonthlyPoint *int `json:"monthly_point"`
+	// 四半期
+	QuarterPoint *int `json:"quarter_point"`
+	// 年間
+	YearlyPoint *int `json:"yearly_point"`
+
 	//ブックマーク数
 	FavNovelCnt *int `json:"fav_novel_cnt"`
+	// 感想数
+	ImpressionCnt *int `json:"impression_cnt"`
 	// レビュー数
 	ReviewCnt *int `json:"review_cnt"`
 	// 評価点
