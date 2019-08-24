@@ -104,6 +104,9 @@ func (res *response) toNoevlInfo() NovelInfo {
 		info.GeneralLastUp = &(*res.GeneralLastUp).Time
 	}
 	info.NovelType = res.NovelType
+	if res.NovelType == nil && res.NT != nil {
+		info.NovelType = res.NT
+	}
 	info.End = res.End
 	info.GeneralAllNo = res.GeneralAllNo
 	info.Length = res.Length
@@ -166,6 +169,7 @@ type response struct {
 	GeneralLastUp *novelTime `json:"general_lastup"` // `YYYY-MM-DD HH:MM:SS` in JST
 	// 連載 短編
 	NovelType *int `json:"novel_type"` // 1:serialized, 2:short story
+	NT        *int `json:"noveltype"`  // novel_type for `of=nt`
 	// 未完結
 	End *int `json:"end"` // 0:finished, 1:running
 	// 全掲載部分数です。短編の場合は1です。

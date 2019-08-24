@@ -141,6 +141,11 @@ func Test_parseResponse(t *testing.T) {
 			&SearchResult{AllCount: 123, NovelInfos: []NovelInfo{{Title: strp("AAA")}, {Title: strp("BBB")}}},
 			false,
 		},
+		{"explicit noveltype output field",
+			args{[]byte(`[{"allcount": 123},{"noveltype":1}, {"noveltype":2}]`)},
+			&SearchResult{AllCount: 123, NovelInfos: []NovelInfo{{NovelType: intp(1)}, {NovelType: intp(2)}}},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
