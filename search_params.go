@@ -1273,6 +1273,14 @@ var outputFieldShortNames = map[OutputField]string{
 	OutputFieldUpdatedAt:      "ua",
 
 	OutputFieldNocGenre: "ng",
+
+	OutputFieldDailyPoint:   "dp",
+	OutputFieldWeeklyPoint:  "wp",
+	OutputFieldMonthlyPoint: "mp",
+	OutputFieldQuaterPoint:  "qp",
+	OutputFieldYearlyPoint:  "yp",
+
+	OutputFieldImpressionCount: "imp",
 }
 
 var orderItemNames = map[OrderItem]string{
