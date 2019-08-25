@@ -37,7 +37,7 @@ func (c *Client) Search(ctx context.Context, params Params) (*SearchResult, erro
 		return nil, err
 	}
 
-	result, err := parseResponse(body)
+	result, err := parseSearchResponse(body)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +45,8 @@ func (c *Client) Search(ctx context.Context, params Params) (*SearchResult, erro
 	return result, nil
 }
 
-func parseResponse(body []byte) (*SearchResult, error) {
-	var responses []response
+func parseSearchResponse(body []byte) (*SearchResult, error) {
+	var responses []searchResponse
 	err := json.Unmarshal(body, &responses)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func parseResponse(body []byte) (*SearchResult, error) {
 	return res, nil
 }
 
-func toNovelInfos(responses []response) []NovelInfo {
+func toNovelInfos(responses []searchResponse) []NovelInfo {
 	novels := make([]NovelInfo, len(responses))
 	for i, res := range responses {
 		novels[i] = res.toNoevlInfo()
@@ -67,7 +67,7 @@ func toNovelInfos(responses []response) []NovelInfo {
 	return novels
 }
 
-func (res *response) toNoevlInfo() NovelInfo {
+func (res *searchResponse) toNoevlInfo() NovelInfo {
 	info := NovelInfo{}
 	info.Title = res.Title
 	info.NCode = res.NCode
@@ -128,7 +128,7 @@ func (res *response) toNoevlInfo() NovelInfo {
 	return info
 }
 
-type response struct {
+type searchResponse struct {
 	// number of all matched novels
 	AllCount *int `json:"allcount"`
 
