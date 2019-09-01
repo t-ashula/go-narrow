@@ -43,6 +43,13 @@ func fetchCommand() cli.Command {
 			cli.BoolFlag{
 				Name: "over18",
 			},
+			cli.IntFlag{
+				Name:  "page",
+				Usage: "fetch only single page SITE/NCODE/`PAGE`/ ",
+			},
+			cli.BoolFlag{
+				Name: "with-all",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			params := makeFetchParams(c)
@@ -165,5 +172,7 @@ func makeFetchParams(c *cli.Context) *narrow.FetchParams {
 	}
 	params.NCode = c.String("ncode")
 	params.AllowOver18 = c.Bool("over18")
+	params.Page = c.Int("page")
+	params.WithContent = c.Bool("with-all")
 	return params
 }
