@@ -15,7 +15,50 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Version = narrow.Version
-	app.Commands = []cli.Command{{
+	app.Commands = []cli.Command{
+		searchCommand(),
+		fetchCommand(),
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func fetchCommand() cli.Command {
+	return cli.Command{
+		Name:  "fetch",
+		Usage: "Fetch from syosetu.com group",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "site",
+				Value: "narou",
+				Usage: "fetch from `SITE` {narou, noc(Nocturne), mid(midnight), ml(moonlight), mlbl(moonlight bl)}",
+			},
+			cli.StringFlag{
+				Required: true,
+				Name:     "ncode",
+				Usage:    "fetch `NCODE`",
+			},
+			cli.BoolFlag{
+				Name: "over18",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			params := makeFetchParams(c)
+			client := narrow.NewClient()
+			res, err := client.Fetch(context.Background(), params)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("FetchResult:%+v\n", res)
+			return nil
+		},
+	}
+}
+
+func searchCommand() cli.Command {
+	return cli.Command{
 		Name:  "search",
 		Usage: "Search from syosetu.com group",
 		Flags: []cli.Flag{
@@ -41,7 +84,7 @@ func main() {
 			if !isKnownSite(site) {
 				return fmt.Errorf("unknown site `%s` specified", site)
 			}
-			params := makeParams(c)
+			params := makeSearchParams(c)
 			client := narrow.NewClient()
 			res, err := client.Search(context.Background(), params)
 			if err != nil {
@@ -58,10 +101,6 @@ func main() {
 
 			return nil
 		},
-	}}
-
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
 	}
 }
 
@@ -69,7 +108,7 @@ func isKnownSite(site string) bool {
 	return site == "noc" || site == "mid" || site == "ml" || site == "mlbl" || site == "narou" || site == ""
 }
 
-func makeParams(c *cli.Context) narrow.Params {
+func makeSearchParams(c *cli.Context) narrow.Params {
 	params := narrow.NewSearchParams()
 	if c.IsSet("limit") {
 		params.SetLimit(c.Int("limit"))
@@ -107,4 +146,24 @@ func nocgenre(site string) narrow.NocGenre {
 	default:
 		return narrow.NocGenreAll
 	}
+}
+
+func makeFetchParams(c *cli.Context) *narrow.FetchParams {
+	params := narrow.NewFetchParams()
+	site := c.String("site")
+	switch site {
+	case "noc":
+		params.Site = narrow.FetchSiteNocturne
+	case "mid":
+		params.Site = narrow.FetchSiteMidNight
+	case "ml":
+		params.Site = narrow.FetchSiteMoonLight
+	case "mlbl":
+		params.Site = narrow.FetchSiteMoonLight
+	default:
+		params.Site = narrow.FetchSiteNarou
+	}
+	params.NCode = c.String("ncode")
+	params.AllowOver18 = c.Bool("over18")
+	return params
 }

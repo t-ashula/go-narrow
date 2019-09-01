@@ -44,6 +44,7 @@ func (params *SearchR18Params) toQueryFuncs() []toQueryFunc {
 		params.queryFromStop,
 		params.queryFromPickup,
 		params.queryFromLastUp,
+		params.queryFromOpt, // undocumented
 	}
 }
 

@@ -2921,6 +2921,73 @@ func TestSearchParams_queryFromLastUp(t *testing.T) {
 	}
 }
 
+func TestSearchParams_WithWeeklyUnique(t *testing.T) {
+	tests := []struct {
+		name   string
+		params *SearchParams
+		want   bool
+	}{
+		{"default false", NewSearchParams(), false},
+		{`withWeeklyUniique, opt=weekly`, &SearchParams{opts: map[optionName]bool{optionNameWeeklyUnique: true}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.params.WithWeeklyUnique(); got != tt.want {
+				t.Errorf("SearchParams.WithWeeklyUnique() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSearchParams_SetWithWeeklyUnique(t *testing.T) {
+	type args struct {
+		f bool
+	}
+	tests := []struct {
+		name   string
+		params *SearchParams
+		args   args
+		want   bool
+	}{
+		{"set with weekly unique should change withWeeklyUnique", NewSearchParams(), args{f: true}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.params.SetWithWeeklyUnique(tt.args.f)
+			result := tt.params.WithWeeklyUnique()
+			if result != tt.want {
+				t.Errorf("SearchParams.SetWithWeeklyUnique(%v) should be change .lastup %v, but %v", tt.args.f, tt.want, result)
+			}
+		})
+	}
+}
+
+func TestSearchParams_ClearWithWeeklyUnique(t *testing.T) {
+	params := &SearchParams{opts: map[optionName]bool{optionNameWeeklyUnique: true}}
+	params.ClearWithWeeklyUnique()
+	if params.WithWeeklyUnique() != false {
+		t.Errorf("SearchParams.ClearWithWeeklyUnique() should WithWeeklyUnique be false, but %v", params.WithWeeklyUnique())
+	}
+}
+
+func TestSearchParams_queryFromOpt(t *testing.T) {
+	tests := []struct {
+		name   string
+		params *SearchParams
+		want   url.Values
+	}{
+		{"no opt, no query", &SearchParams{}, makeValues([][2]string{})},
+		{`withWeeklyUniique, opt=weekly`, &SearchParams{opts: map[optionName]bool{optionNameWeeklyUnique: true}}, makeValues([][2]string{{"opt", "weekly"}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.params.queryFromOpt(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SearchParams.queryFromOpt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_minmaxPair_val(t *testing.T) {
 	type args struct {
 		k mmpKey
