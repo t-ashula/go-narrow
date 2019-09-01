@@ -395,6 +395,9 @@ const (
 type FetchParams struct {
 	Site  FetchSite
 	NCode string
+	Page  int
+
+	WithContent bool
 
 	AllowOver18 bool
 }
@@ -418,6 +421,7 @@ type FetchPage struct {
 	Preface        []ContentLine
 	Afterword      []ContentLine
 	SubTitle       string
+	ChapterTitle   *string
 	PageNumber     int
 	PublishDate    time.Time
 	LastUpdateDate *time.Time

@@ -56,8 +56,90 @@ func (c *Client) Fetch(ctx context.Context, params *FetchParams) (*FetchResult, 
 	}
 	result.Site = params.Site
 	result.NCode = params.NCode
+	if result.NovelType == 1 {
+		err = nil
+		if params.WithContent {
+			err = c.fetchAllPageContent(ctx, result, params)
+		} else if params.Page > 0 {
+			err = c.fetchSinglePageContent(ctx, result, params)
+		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "fetch page content failed. %v", err)
+			return result, nil
+		}
+	}
 
 	return result, nil
+}
+
+func (c *Client) fetchAllPageContent(ctx context.Context, result *FetchResult, params *FetchParams) error {
+	for i := 1; i <= result.PageCount; i++ {
+		page, err := c.fetchPageContent(ctx, params, i)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "fetch page %d content failed, %v", i, err)
+			return err
+		}
+		// Pages[i].PublishDate, LastUpdateDate is already set
+		page.PublishDate = result.Pages[i-1].PublishDate
+		page.LastUpdateDate = result.Pages[i-1].LastUpdateDate
+		result.Pages[i-1] = *page
+	}
+	return nil
+}
+
+func (c *Client) fetchSinglePageContent(ctx context.Context, result *FetchResult, params *FetchParams) error {
+	if params.Page > result.PageCount {
+		// do nothing
+		fmt.Fprintf(os.Stderr, "specified page %d greater than fetched index %d", params.Page, result.PageCount)
+		return nil
+	}
+	pageNo := params.Page
+	page, err := c.fetchPageContent(ctx, params, pageNo)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "fetch page %d failed %s", pageNo, err)
+		return err
+	}
+
+	// Pages[i].PublishDate, LastUpdateDate is already set
+	page.PublishDate = result.Pages[pageNo-1].PublishDate
+	page.LastUpdateDate = result.Pages[pageNo-1].LastUpdateDate
+	result.Pages[pageNo-1] = *page
+
+	return nil
+}
+
+func (c *Client) fetchPageContent(ctx context.Context, params *FetchParams, pageNo int) (*FetchPage, error) {
+	u, err := params.toContentURL()
+	if err != nil {
+		return nil, err
+	}
+	u.Path = fmt.Sprintf("%s%d/", u.Path, pageNo)
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("user-agent", userAgent)
+
+	req = req.WithContext(ctx)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	page, err := parseContentPage(doc)
+	if err != nil {
+		return nil, err
+	}
+
+	return page, nil
 }
 
 // NewFetchParams returns new FetchParams
@@ -73,7 +155,6 @@ func (params *FetchParams) toContentURL() (*url.URL, error) {
 	}
 
 	u, err := url.Parse(fmt.Sprintf("https://%s.syosetu.com/%s/", subDomain, params.NCode))
-	fmt.Fprintf(os.Stderr, "fetch:%s\n", u.String())
 	return u, err
 }
 
@@ -83,11 +164,12 @@ func parseFetchedContent(r io.Reader) (*FetchResult, error) {
 		return nil, err
 	}
 	abst := doc.Find("#novel_ex")
-	if abst.Size() == 1 {
-		res, err := parseSeriesIndexPage(doc)
+	if abst.Size() == 0 {
+		res, err := parseShortContentPage(doc)
 		return res, err
 	}
-	res, err := parseShortContentPage(doc)
+
+	res, err := parseSeriesIndexPage(doc)
 	return res, err
 }
 
@@ -156,15 +238,11 @@ func parseShortContentPage(doc *goquery.Document) (*FetchResult, error) {
 	res.NovelType = 2
 	res.PageCount = 1
 	res.Pages = make([]FetchPage, 1)
-	res.Pages[0] = FetchPage{}
-	res.Pages[0].Preface = parseContentLines(doc, "#novel_p")
-	res.Pages[0].Lines = parseContentLines(doc, "#novel_honbun")
-	res.Pages[0].Afterword = parseContentLines(doc, "#novel_a")
-	raw, err := doc.Find("#novel_color").First().Html()
+	page, err := parseContentPage(doc)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "raw content html error:%s", err)
+		fmt.Fprintf(os.Stderr, "parse content page error:%s", err)
 	}
-	res.Pages[0].rawHTML = raw
+	res.Pages[0] = *page
 	return res, nil
 }
 
@@ -183,4 +261,23 @@ func parseContentLines(doc *goquery.Document, selector string) []ContentLine {
 		content[i] = ContentLine{RawLine: raw}
 	})
 	return content
+}
+
+func parseContentPage(doc *goquery.Document) (*FetchPage, error) {
+	page := &FetchPage{}
+	page.SubTitle = strings.TrimSpace(doc.Find("div.novel_subtitle").First().Text())
+	chapter := doc.Find(".chapter_title")
+	if chapter.Size() != 0 {
+		title := strings.TrimSpace(chapter.First().Text())
+		page.ChapterTitle = &title
+	}
+	page.Preface = parseContentLines(doc, "#novel_p")
+	page.Lines = parseContentLines(doc, "#novel_honbun")
+	page.Afterword = parseContentLines(doc, "#novel_a")
+	raw, err := doc.Find("#novel_color").First().Html()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "raw content html error:%s", err)
+	}
+	page.rawHTML = raw
+	return page, nil
 }
