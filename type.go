@@ -379,3 +379,52 @@ type SearchR18Params struct {
 	nocGenres    []NocGenre
 	notNocGenres []NocGenre
 }
+
+// FetchSite for site fetch from
+type FetchSite int
+
+// sites
+const (
+	FetchSiteNarou FetchSite = iota
+	FetchSiteNocturne
+	FetchSiteMidNight
+	FetchSiteMoonLight
+)
+
+// FetchParams used for fetch
+type FetchParams struct {
+	Site  FetchSite
+	NCode string
+
+	AllowOver18 bool
+}
+
+// FetchResult contains fetch result
+type FetchResult struct {
+	Site       FetchSite
+	NCode      string
+	NovelType  int
+	PageCount  int
+	Pages      []FetchPage
+	Title      string
+	WriterName string
+	Abstruct   string
+}
+
+// FetchPage contains fetched content
+type FetchPage struct {
+	rawHTML        string
+	Lines          []ContentLine
+	Preface        []ContentLine
+	Afterword      []ContentLine
+	SubTitle       string
+	PageNumber     int
+	PublishDate    time.Time
+	LastUpdateDate *time.Time
+}
+
+// ContentLine contains parsed line of content
+type ContentLine struct {
+	// RawLine contains raw content such as `<p id="L42">ほげほげ</p>`
+	RawLine string
+}
